@@ -1,8 +1,10 @@
 package com.example.testtask
 
 import com.google.gson.Gson
+import java.lang.Exception
 import java.net.URL
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
 
 data class Page (val Date: String,
@@ -32,43 +34,28 @@ data class Valutes (val AUD : ValuteJS, val AZN : ValuteJS, val GBP : ValuteJS,
 
 }
 
-
 data class ValuteJS (val ID: String,
                    val NumCode : String,
                    val CharCode : String,
                    val Nominal : Int,
                    val Name : String,
                    val Value : Double,
-                   val Previous : Double) {
+                   val Previous : Double) {}
 
-}
+class DataPage {
 
-class DataPage{
-     var  data : List<ValuteJS>? = null
+    var data : List<ValuteJS>? = null
+    var url = "https://www.cbr-xml-daily.ru/daily_json.js"
 
-    fun setDataP(dataFromPage : List<ValuteJS>) {
+    private fun setDataPage(dataFromPage : List<ValuteJS>) {
         data = ArrayList(dataFromPage.map {it.copy()})
-        //print(data)
     }
-
-    fun printData() {
-        print(data)
-    }
-
-
-//    fun getDataP() :List<ValuteJS>? {
-//        print(data)
-//        return data
-//    }
 
     fun request()  {
-        val data : List<ValuteJS>? = null
         val executor = Executors.newSingleThreadExecutor()
         executor.execute {
-            var conn : HttpsURLConnection? = null
-
             try {
-                val connection = URL("https://www.cbr-xml-daily.ru/daily_json.js")
+                val connection = URL(url)
                     .openConnection() as HttpsURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Content-Type", "application/json; utf-8")
@@ -78,14 +65,21 @@ class DataPage{
                 val json = connection.inputStream.bufferedReader().readText()
 
                 val page = Gson().fromJson(json, Page::class.java)
-                //print(page.Valute.getValutes())
-                setDataP(page.Valute.getValutes())
+                setDataPage(page.Valute.getValutes())
+
             } catch (error: Error) {
                 error.printStackTrace()
             }
         }
+        executor.shutdown()
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
+        } catch (exc: Exception) {
+            exc.printStackTrace()
+        }
     }
 }
+
 
 
 

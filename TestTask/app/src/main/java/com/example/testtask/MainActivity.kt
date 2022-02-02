@@ -2,14 +2,14 @@ package com.example.testtask
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.SimpleAdapter
 import com.example.testtask.databinding.SimpleListViewBinding
-import org.json.JSONObject
-import java.lang.Exception
+import com.google.gson.Gson
+
 import java.net.URL
-import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+
 import javax.net.ssl.HttpsURLConnection
 
 class MainActivity : AppCompatActivity() {
@@ -23,17 +23,13 @@ class MainActivity : AppCompatActivity() {
         setUpListView()
     }
 
+    private fun setUpListView() {
 
-    fun setUpListView() {
         val dp = DataPage()
         dp.request()
-        Thread.sleep(1000)
-
-        val list = dp.data
-        print(list?.size)
 
         val data = mutableListOf<Map<String, String>>()
-        list?.forEach {
+        dp.data?.forEach {
             data.add(mapOf(
                 KEY_TITLE to it.Name,
                 KEY_DESCRIPTION to it.Value.toString() + " руб."))
@@ -46,7 +42,6 @@ class MainActivity : AppCompatActivity() {
             arrayOf(KEY_TITLE, KEY_DESCRIPTION),
             intArrayOf(android.R.id.text1, android.R.id.text2)
         )
-
         binding.listView.adapter = adapter
     }
 
